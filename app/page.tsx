@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { db } from "./lib/firebase";
-import { doc, getDoc, setDoc } from "firebase/firestore";
 
 import Stats from "./components/Stats";
 import HabitCard from "./components/HabitCard";
@@ -18,52 +16,26 @@ export default function Page() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [open, setOpen] = useState(false);
 
-  const docRef = doc(db, "user", "main");
-
   // =========================
-  // LOAD DATA
+  // LOAD FROM LOCALSTORAGE
   // =========================
   useEffect(() => {
-    async function load() {
-      try {
-        const snap = await getDoc(docRef);
-
-        if (snap.exists()) {
-          const data = snap.data();
-          setHabits(data.habits || []);
-
-          // backup local
-          localStorage.setItem("habits", JSON.stringify(data.habits || []));
-        } else {
-          // fallback local
-          const local = localStorage.getItem("habits");
-          if (local) setHabits(JSON.parse(local));
-        }
-      } catch {
-        const local = localStorage.getItem("habits");
-        if (local) setHabits(JSON.parse(local));
-      }
+    const saved = localStorage.getItem("habits");
+    if (saved) {
+      setHabits(JSON.parse(saved));
     }
-
-    load();
   }, []);
 
   // =========================
-  // SAVE (Firebase + Local)
+  // SAVE TO LOCALSTORAGE
   // =========================
-  async function save(data: Habit[]) {
+  function save(data: Habit[]) {
     setHabits(data);
     localStorage.setItem("habits", JSON.stringify(data));
-
-    try {
-      await setDoc(docRef, { habits: data });
-    } catch (e) {
-      console.log("firebase save failed", e);
-    }
   }
 
   // =========================
-  // DAYS
+  // DAYS COUNT
   // =========================
   function getDays(startDate: string) {
     return Math.floor(
@@ -73,14 +45,14 @@ export default function Page() {
   }
 
   // =========================
-  // ADD
+  // ADD HABIT
   // =========================
   function addHabit(data: { name: string; note?: string }) {
     const newHabits: Habit[] = [
       ...habits,
       {
         name: data.name,
-        note: data.note,
+        note: data.note || "",
         startDate: new Date().toISOString(),
       },
     ];
@@ -96,7 +68,7 @@ export default function Page() {
   }
 
   // =========================
-  // RESET
+  // RESET STREAK
   // =========================
   function resetHabit(index: number) {
     const copy = [...habits];
@@ -159,6 +131,22 @@ const styles = {
   },
 
   addBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    background: "white",
+    color: "black",
+    fontSize: 20,
+    border: "none",
+  },
+
+  list: {
+    marginTop: 16,
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 12,
+  },
+};  addBtn: {
     width: 40,
     height: 40,
     borderRadius: 12,
