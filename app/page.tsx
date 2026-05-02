@@ -1,65 +1,149 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useEffect, useState } from "react";
+import { db } from "./lib/firebase";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+
+import Stats from "./components/Stats";
+import HabitCard from "./components/HabitCard";
+import AddModal from "./components/AddModal";
+
+export default function Page() {
+  const [habits, setHabits] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+
+  const docRef = doc(db, "user", "main");
+
+  // ===== LOAD =====
+  useEffect(() => {
+    async function load() {
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        setHabits(snap.data().habits || []);
+      }
+    }
+
+    load();
+  }, []);
+
+  // ===== SAVE =====
+  async function save(updated: any[]) {
+    setHabits(updated);
+    await setDoc(docRef, { habits: updated });
+  }
+
+  // ===== STREAK =====
+  function getDays(startDate: string) {
+    const start = new Date(startDate);
+    const now = new Date();
+    return Math.floor(
+      (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+    );
+  }
+
+  // ===== ADD =====
+  function addHabit(data: { name: string; note?: string }) {
+    const newHabits = [
+      ...habits,
+      {
+        name: data.name,
+        note: data.note || "",
+        startDate: new Date().toISOString(),
+      },
+    ];
+
+    save(newHabits);
+  }
+
+  // ===== DELETE =====
+  function deleteHabit(index: number) {
+    const newHabits = habits.filter((_, i) => i !== index);
+    save(newHabits);
+  }
+
+  // ===== RESET =====
+  function resetHabit(index: number) {
+    const newHabits = [...habits];
+    newHabits[index].startDate = new Date().toISOString();
+    save(newHabits);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div style={styles.page}>
+
+      {/* HEADER */}
+      <div style={styles.header}>
+        <div style={styles.title}>Discipline</div>
+
+        <button
+          style={styles.addBtn}
+          onClick={() => setOpen(true)}
+        >
+          +
+        </button>
+      </div>
+
+      {/* STATS */}
+      <Stats habits={habits} getDays={getDays} />
+
+      {/* LIST */}
+      <div style={styles.list}>
+        {habits.map((h, i) => (
+          <HabitCard
+            key={i}
+            habit={h}
+            index={i}
+            onReset={resetHabit}
+            onDelete={deleteHabit}
+            getDays={getDays}
+          />
+        ))}
+      </div>
+
+      {/* MODAL */}
+      <AddModal
+        open={open}
+        onClose={() => setOpen(false)}
+        onAdd={addHabit}
+      />
+
     </div>
   );
 }
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "#0b0c10",
+    padding: 16,
+    color: "#fff",
+  },
+
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  title: {
+    fontSize: 28,
+    fontWeight: 700,
+  },
+
+  addBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    border: "1px solid rgba(255,255,255,0.08)",
+    background: "rgba(255,255,255,0.03)",
+    color: "#fff",
+    fontSize: 20,
+  },
+
+  list: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+};
