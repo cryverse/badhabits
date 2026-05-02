@@ -2,7 +2,17 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function BottomSheet({ open, onClose, children }) {
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  children: React.ReactNode;
+};
+
+export default function BottomSheet({
+  open,
+  onClose,
+  children,
+}: Props) {
   return (
     <AnimatePresence>
       {open && (
@@ -21,16 +31,9 @@ export default function BottomSheet({ open, onClose, children }) {
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{
-              type: "spring",
-              stiffness: 260,
-              damping: 30,
-            }}
+            transition={{ type: "spring", damping: 25 }}
             style={styles.sheet}
           >
-            {/* HANDLE (iOS feel) */}
-            <div style={styles.handle} />
-
             {children}
           </motion.div>
         </>
@@ -41,35 +44,20 @@ export default function BottomSheet({ open, onClose, children }) {
 
 const styles = {
   backdrop: {
-    position: "fixed",
+    position: "fixed" as const,
     inset: 0,
-    background: "rgba(0,0,0,0.6)",
-    backdropFilter: "blur(10px)",
-    zIndex: 999,
+    background: "rgba(0,0,0,0.5)",
   },
 
   sheet: {
-    position: "fixed",
-    bottom: 0,
+    position: "fixed" as const,
     left: 0,
     right: 0,
-
-    background: "rgba(20,20,25,0.95)",
-    borderTopLeftRadius: 22,
-    borderTopRightRadius: 22,
-
+    bottom: 0,
+    background: "#14161c",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     padding: 16,
-    paddingBottom: 30,
-
-    boxShadow: "0 -10px 40px rgba(0,0,0,0.6)",
-    zIndex: 1000,
-  },
-
-  handle: {
-    width: 40,
-    height: 5,
-    borderRadius: 999,
-    background: "rgba(255,255,255,0.2)",
-    margin: "0 auto 12px",
+    minHeight: 200,
   },
 };
