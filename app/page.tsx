@@ -143,23 +143,7 @@ const styles = {
   list: {
     marginTop: 16,
     display: "flex",
-    flexDirection: "column" as const,
-    gap: 12,
-  },
-};  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    background: "white",
-    color: "black",
-    fontSize: 20,
-    border: "none",
-  },
-
-  list: {
-    marginTop: 16,
-    display: "flex",
-    flexDirection: "column" as const,
+    flexDirection: "column",
     gap: 12,
   },
 };
