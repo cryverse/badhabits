@@ -1,12 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { theme } from "../styles/theme";
 
-export default function AddModal({ open, onClose, onAdd }) {
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  onAdd: (data: { name: string; note?: string }) => void;
+};
+
+export default function AddModal({ open, onClose, onAdd }: Props) {
   const [name, setName] = useState("");
   const [note, setNote] = useState("");
+
+  if (!open) return null;
 
   function handleAdd() {
     if (!name.trim()) return;
@@ -22,118 +29,74 @@ export default function AddModal({ open, onClose, onAdd }) {
   }
 
   return (
-    <AnimatePresence>
-      {open && (
-        <>
-          {/* BACKDROP */}
-          <motion.div
-            style={styles.backdrop}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+    <div style={styles.overlay} onClick={onClose}>
+      <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
 
-          {/* SHEET */}
-          <motion.div
-            style={styles.sheet}
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            {/* HANDLE */}
-            <div style={styles.handle} />
+        <div style={styles.title}>Add Habit</div>
 
-            {/* TITLE */}
-            <div style={styles.title}>New habit</div>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Habit name"
+          style={styles.input}
+        />
 
-            {/* INPUTS */}
-            <input
-              style={styles.input}
-              placeholder="Habit name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+        <input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Note (optional)"
+          style={styles.input}
+        />
 
-            <input
-              style={styles.input}
-              placeholder="Note (optional)"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+        <button style={styles.button} onClick={handleAdd}>
+          Add
+        </button>
 
-            {/* BUTTON */}
-            <button style={styles.button} onClick={handleAdd}>
-              Add habit
-            </button>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+      </div>
+    </div>
   );
 }
 
 const styles = {
-  backdrop: {
-    position: "fixed",
+  overlay: {
+    position: "fixed" as const,
     inset: 0,
     background: "rgba(0,0,0,0.6)",
-    zIndex: 40,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
   },
 
-  sheet: {
-    position: "fixed",
-    bottom: 0,
-    left: 0,
-    right: 0,
-
-    background: theme.bg.elevated,
-    borderTopLeftRadius: theme.radius.lg,
-    borderTopRightRadius: theme.radius.lg,
-
-    padding: theme.spacing(5),
-    zIndex: 50,
-  },
-
-  handle: {
-    width: 40,
-    height: 4,
-    background: "rgba(255,255,255,0.15)",
-    borderRadius: 999,
-    margin: "0 auto",
-    marginBottom: theme.spacing(4),
+  modal: {
+    width: "90%",
+    maxWidth: 360,
+    background: "#14161c",
+    borderRadius: 16,
+    padding: 16,
   },
 
   title: {
     fontSize: 18,
     fontWeight: 600,
-    color: theme.text.primary,
-    marginBottom: theme.spacing(4),
+    marginBottom: 12,
   },
 
   input: {
     width: "100%",
-    padding: "12px 14px",
-    marginBottom: theme.spacing(3),
-
-    background: theme.surface.primary,
-    border: theme.border.thin,
-    borderRadius: theme.radius.md,
-
-    color: theme.text.primary,
-    outline: "none",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+    border: "1px solid rgba(255,255,255,0.1)",
+    background: "#0e0f13",
+    color: "#fff",
   },
 
   button: {
     width: "100%",
-    padding: "12px 14px",
-
-    background: theme.accent.main,
+    padding: 12,
+    borderRadius: 10,
+    background: "#ffffff",
     color: "#000",
     fontWeight: 600,
-
-    borderRadius: theme.radius.md,
-    border: "none",
   },
 };
