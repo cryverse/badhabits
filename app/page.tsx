@@ -22,12 +22,16 @@ export default function Page() {
   useEffect(() => {
     const saved = localStorage.getItem("habits");
     if (saved) {
-      setHabits(JSON.parse(saved));
+      try {
+        setHabits(JSON.parse(saved));
+      } catch {
+        setHabits([]);
+      }
     }
   }, []);
 
   // =========================
-  // SAVE TO LOCALSTORAGE
+  // SAVE
   // =========================
   function save(data: Habit[]) {
     setHabits(data);
@@ -35,7 +39,7 @@ export default function Page() {
   }
 
   // =========================
-  // DAYS COUNT
+  // DAYS CALC
   // =========================
   function getDays(startDate: string) {
     return Math.floor(
@@ -68,7 +72,7 @@ export default function Page() {
   }
 
   // =========================
-  // RESET STREAK
+  // RESET
   // =========================
   function resetHabit(index: number) {
     const copy = [...habits];
@@ -78,7 +82,7 @@ export default function Page() {
 
   return (
     <div style={styles.page}>
-
+      {/* HEADER */}
       <div style={styles.header}>
         <h1 style={styles.title}>Habits</h1>
 
@@ -87,8 +91,10 @@ export default function Page() {
         </button>
       </div>
 
+      {/* STATS */}
       <Stats habits={habits} getDays={getDays} />
 
+      {/* LIST */}
       <div style={styles.list}>
         {habits.map((h, i) => (
           <HabitCard
@@ -102,6 +108,7 @@ export default function Page() {
         ))}
       </div>
 
+      {/* MODAL */}
       <AddModal
         open={open}
         onClose={() => setOpen(false)}
@@ -117,33 +124,34 @@ const styles = {
     background: "#0b0c10",
     minHeight: "100vh",
     color: "white",
-  },
+  } as React.CSSProperties,
 
   header: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-  },
+  } as React.CSSProperties,
 
   title: {
     fontSize: 24,
     fontWeight: 700,
-  },
+  } as React.CSSProperties,
 
   addBtn: {
-    width: 40,
-    height: 40,
+    width: 42,
+    height: 42,
     borderRadius: 12,
     background: "white",
     color: "black",
-    fontSize: 20,
+    fontSize: 22,
     border: "none",
-  },
+    cursor: "pointer",
+  } as React.CSSProperties,
 
   list: {
     marginTop: 16,
     display: "flex",
-    flexDirection: "column",
+    flexDirection: "column" as const,
     gap: 12,
-  },
+  } as React.CSSProperties,
 };
