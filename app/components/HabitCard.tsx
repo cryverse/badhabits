@@ -3,50 +3,55 @@
 import { theme } from "../styles/theme";
 import ProgressRing from "./ProgressRing";
 
+type Props = {
+  habit: {
+    name: string;
+    note?: string;
+    startDate: string;
+  };
+  index: number;
+  onReset: (i: number) => void;
+  onDelete: (i: number) => void;
+  getDays: (date: string) => number;
+};
+
 export default function HabitCard({
   habit,
   index,
   onReset,
   onDelete,
   getDays,
-}) {
+}: Props) {
   const days = getDays(habit.startDate);
   const progress = Math.min(100, days * 5);
 
   return (
     <div style={styles.card}>
 
-      {/* HEADER */}
       <div style={styles.header}>
         <div>
           <div style={styles.title}>{habit.name}</div>
-
-          {habit.note && (
-            <div style={styles.note}>{habit.note}</div>
-          )}
+          {habit.note && <div style={styles.note}>{habit.note}</div>}
         </div>
 
         <ProgressRing progress={progress} size={54} />
       </div>
 
-      {/* STATS */}
       <div style={styles.stats}>
-        <div style={styles.stat}>
+        <div>
           <div style={styles.value}>{days}</div>
           <div style={styles.label}>days</div>
         </div>
 
-        <div style={styles.stat}>
+        <div>
           <div style={styles.value}>{progress}%</div>
           <div style={styles.label}>progress</div>
         </div>
       </div>
 
-      {/* ACTIONS */}
       <div style={styles.actions}>
-
         <button
-          style={styles.reset}
+          style={styles.btn}
           onClick={(e) => {
             e.stopPropagation();
             onReset(index);
@@ -64,7 +69,6 @@ export default function HabitCard({
         >
           delete
         </button>
-
       </div>
 
     </div>
@@ -73,74 +77,65 @@ export default function HabitCard({
 
 const styles = {
   card: {
-    background: theme.surface.primary,
-    border: theme.border.thin,
-    borderRadius: theme.radius.md,
-    padding: theme.spacing(4),
+    background: "#14161c",
+    borderRadius: 16,
+    padding: 16,
+    border: "1px solid rgba(255,255,255,0.06)",
   },
 
   header: {
     display: "flex",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: theme.spacing(3),
+    marginBottom: 12,
   },
 
   title: {
     fontSize: 16,
     fontWeight: 600,
-    color: theme.text.primary,
   },
 
   note: {
     fontSize: 12,
+    opacity: 0.6,
     marginTop: 4,
-    color: theme.text.muted,
   },
 
   stats: {
     display: "flex",
-    gap: theme.spacing(4),
-    marginBottom: theme.spacing(3),
-  },
-
-  stat: {
-    flex: 1,
+    gap: 20,
+    marginBottom: 12,
   },
 
   value: {
     fontSize: 18,
     fontWeight: 600,
-    color: theme.text.primary,
   },
 
   label: {
-    fontSize: 11,
-    color: theme.text.muted,
-    textTransform: "uppercase",
-    letterSpacing: 1,
+    fontSize: 10,
+    opacity: 0.5,
   },
 
   actions: {
     display: "flex",
-    gap: theme.spacing(2),
+    gap: 10,
   },
 
-  reset: {
+  btn: {
     flex: 1,
-    padding: "10px 0",
-    borderRadius: 12,
-    border: "1px solid rgba(255,255,255,0.08)",
+    padding: 10,
+    borderRadius: 10,
     background: "transparent",
-    color: theme.text.primary,
+    border: "1px solid rgba(255,255,255,0.1)",
+    color: "white",
   },
 
   delete: {
     flex: 1,
-    padding: "10px 0",
-    borderRadius: 12,
-    border: "1px solid rgba(255,80,80,0.2)",
+    padding: 10,
+    borderRadius: 10,
     background: "transparent",
-    color: theme.status.danger,
+    border: "1px solid rgba(255,80,80,0.3)",
+    color: "#ff4d4d",
   },
 };

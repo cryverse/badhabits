@@ -14,34 +14,26 @@ export default function Page() {
 
   const docRef = doc(db, "user", "main");
 
-  // ===== LOAD =====
   useEffect(() => {
     async function load() {
       const snap = await getDoc(docRef);
-      if (snap.exists()) {
-        setHabits(snap.data().habits || []);
-      }
+      if (snap.exists()) setHabits(snap.data().habits || []);
     }
-
     load();
   }, []);
 
-  // ===== SAVE =====
-  async function save(updated: any[]) {
-    setHabits(updated);
-    await setDoc(docRef, { habits: updated });
+  async function save(data: any[]) {
+    setHabits(data);
+    await setDoc(docRef, { habits: data });
   }
 
-  // ===== STREAK =====
   function getDays(startDate: string) {
-    const start = new Date(startDate);
-    const now = new Date();
     return Math.floor(
-      (now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+      (Date.now() - new Date(startDate).getTime()) /
+        (1000 * 60 * 60 * 24)
     );
   }
 
-  // ===== ADD =====
   function addHabit(data: { name: string; note?: string }) {
     const newHabits = [
       ...habits,
@@ -55,95 +47,42 @@ export default function Page() {
     save(newHabits);
   }
 
-  // ===== DELETE =====
   function deleteHabit(index: number) {
-    const newHabits = habits.filter((_, i) => i !== index);
-    save(newHabits);
+    save(habits.filter((_, i) => i !== index));
   }
 
-  // ===== RESET =====
   function resetHabit(index: number) {
-    const newHabits = [...habits];
-    newHabits[index].startDate = new Date().toISOString();
-    save(newHabits);
+    const copy = [...habits];
+    copy[index].startDate = new Date().toISOString();
+    save(copy);
   }
 
   return (
-    <div style={styles.page}>
+    <div style={{ padding: 16, color: "white", background: "#0b0c10", minHeight: "100vh" }}>
 
-      {/* HEADER */}
-      <div style={styles.header}>
-        <div style={styles.title}>Discipline</div>
-
-        <button
-          style={styles.addBtn}
-          onClick={() => setOpen(true)}
-        >
-          +
-        </button>
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <h1>Habits</h1>
+        <button onClick={() => setOpen(true)}>+</button>
       </div>
 
-      {/* STATS */}
       <Stats habits={habits} getDays={getDays} />
 
-      {/* LIST */}
-      <div style={styles.list}>
-        {habits.map((h, i) => (
-          <HabitCard
-            key={i}
-            habit={h}
-            index={i}
-            onReset={resetHabit}
-            onDelete={deleteHabit}
-            getDays={getDays}
-          />
-        ))}
-      </div>
+      {habits.map((h, i) => (
+        <HabitCard
+          key={i}
+          habit={h}
+          index={i}
+          onReset={resetHabit}
+          onDelete={deleteHabit}
+          getDays={getDays}
+        />
+      ))}
 
-      {/* MODAL */}
       <AddModal
         open={open}
         onClose={() => setOpen(false)}
         onAdd={addHabit}
       />
-
     </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "#0b0c10",
-    padding: 16,
-    color: "#fff",
-  },
-
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-
-  title: {
-    fontSize: 28,
-    fontWeight: 700,
-  },
-
-  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    border: "1px solid rgba(255,255,255,0.08)",
-    background: "rgba(255,255,255,0.03)",
-    color: "#fff",
-    fontSize: 20,
-  },
-
-  list: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
-  },
-};
